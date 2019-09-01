@@ -2,10 +2,15 @@
 package metrics
 
 import (
+	"context"
+	// "fmt"
 	"github.com/libp2p/go-flow-metrics"
 	"github.com/libp2p/go-libp2p-core/peer"
 	"github.com/libp2p/go-libp2p-core/protocol"
+	logging "github.com/ipfs/go-log"
 )
+
+var logger = logging.Logger("jimnet")
 
 // BandwidthCounter tracks incoming and outgoing data transferred by the local peer.
 // Metrics are available for total bandwidth across all peers / protocols, as well
@@ -43,6 +48,13 @@ func (bwc *BandwidthCounter) LogRecvMessage(size int64) {
 func (bwc *BandwidthCounter) LogSentMessageStream(size int64, proto protocol.ID, p peer.ID) {
 	bwc.protocolOut.Get(string(proto)).Mark(uint64(size))
 	bwc.peerOut.Get(string(p)).Mark(uint64(size))
+	// fmt.Printf("Jim1 out %v '%v' %v\n", size, proto, p)
+	// logger.Debugf("out %v %v %v", size, proto, p)
+	logger.Event(context.TODO(), "out", logging.Metadata{
+		"size": size,
+		"proto": proto,
+		"peer": p,
+	})
 }
 
 // LogRecvMessageStream records the size of an incoming message over a single logical stream.
@@ -50,6 +62,13 @@ func (bwc *BandwidthCounter) LogSentMessageStream(size int64, proto protocol.ID,
 func (bwc *BandwidthCounter) LogRecvMessageStream(size int64, proto protocol.ID, p peer.ID) {
 	bwc.protocolIn.Get(string(proto)).Mark(uint64(size))
 	bwc.peerIn.Get(string(p)).Mark(uint64(size))
+	// fmt.Printf("Jim1 in %v '%v' %v\n", size, proto, p)
+	// logger.Debugf("in %v %v %v", size, proto, p)
+	logger.Event(context.TODO(), "in", logging.Metadata{
+		"size": size,
+		"proto": proto,
+		"peer": p,
+	})
 }
 
 // GetBandwidthForPeer returns a Stats struct with bandwidth metrics associated with the given peer.ID.
